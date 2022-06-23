@@ -9,7 +9,7 @@ import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './jwt-strategy';
 import { SendMail } from 'src/users/mail/send.mail';
-
+require('dotenv').config()
 @Module({
   controllers: [AuthController],
   providers: [AuthService, JwtService, UsersService, JwtStrategy,SendMail],
