@@ -11,8 +11,7 @@ import {
   Req,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { CreateAuthDto } from './dto/create-auth.dto';
-import { UpdateAuthDto } from './dto/update-auth.dto';
+import {  LoginDto } from './dto/login.dto';
 import { Response, Request } from 'express';
 
 @Controller('api/v1')
@@ -25,23 +24,9 @@ export class AuthController {
     return response.status(201).send(user);
   }
 
-  @Get()
-  findAll() {
-    return this.authService.findAll();
+  @Post('auth/login')
+  async login(@Body() authCredentialDto: LoginDto) {
+    return await this.authService.login( authCredentialDto);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.authService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateAuthDto: UpdateAuthDto) {
-    return this.authService.update(+id, updateAuthDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.authService.remove(+id);
-  }
 }

@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
@@ -10,6 +10,8 @@ import { UsersModule } from './users/users.module';
 import dbConfig from './config/database.config';
 import { UsersService } from './users/users.service';
 import { UserRepository } from './users/users.repository';
+import { SendMail } from './users/mail/send.mail';
+import { AuthorizationMiddleware } from './middlewares/authorization.middleware';
 
 @Module({
   imports: [
@@ -19,6 +21,12 @@ import { UserRepository } from './users/users.repository';
     TypeOrmModule.forFeature([UserRepository]),
   ],
   controllers: [AppController, AuthController],
-  providers: [AppService, AuthService, JwtService, UsersService],
+  providers: [AppService, AuthService, JwtService, UsersService, SendMail],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(AuthorizationMiddleware)
+      .forRoutes('*');
+  }
+}

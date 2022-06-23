@@ -1,40 +1,49 @@
-import { Injectable } from '@nestjs/common';
-import { CreateAuthDto } from './dto/create-auth.dto';
-import { UpdateAuthDto } from './dto/update-auth.dto';
+import { BadRequestException, HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { LoginDto } from './dto/login.dto';
 import { JwtPayload } from './interfaces/jwt-payload.interface';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from 'src/users/users.service';
+import * as bcrypt from 'bcryptjs';
+import { InjectRepository } from '@nestjs/typeorm';
+import { UserRepository } from 'src/users/users.repository';
+import { isString } from 'class-validator';
 
+type decodedToken = null | {
+  [key: string]: any;
+} | string
 @Injectable()
 export class AuthService {
   constructor(
+    @InjectRepository(UserRepository)
+    private userRepository: UserRepository,
     private jwtService: JwtService,
     private userService: UsersService,
-  ) {}
+  ) { }
 
   async register(request: any) {
     const user = await this.userService.createUserByEmail(request);
     return await this.getAccessToken(user._id, user.role, user.email);
   }
-  create(createAuthDto: CreateAuthDto) {
-    return 'This action adds a new auth';
+
+  async login(authCredentialDto: LoginDto): Promise<{ token: string }> {
+    const { email, password } = authCredentialDto;
+    const user = await this.userRepository.findOne({
+      where: {
+        email: email,
+      }
+    });
+    const isMatch = await bcrypt.compareSync(password, user.password);
+    if (!isMatch) throw new BadRequestException('Incorrect username or password');
+    return await this.getAccessToken(user._id, user.role, user.email);
   }
 
-  findAll() {
-    return `This action returns all auth`;
+
+  async jwtTokenDecode(jwt: string): Promise<JwtPayload> {
+    const decodedToken: decodedToken = this.jwtService.decode(jwt);
+    if (!decodedToken || isString(decodedToken)) throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
+    return { id: decodedToken.id, role: decodedToken.role, email: decodedToken.email };
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} auth`;
-  }
-
-  update(id: number, updateAuthDto: UpdateAuthDto) {
-    return `This action updates a #${id} auth`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} auth`;
-  }
   async getAccessToken(
     id: string,
     role: string,

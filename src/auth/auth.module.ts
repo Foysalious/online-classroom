@@ -8,10 +8,11 @@ import { UserRepository } from 'src/users/users.repository';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './jwt-strategy';
+import { SendMail } from 'src/users/mail/send.mail';
 
 @Module({
   controllers: [AuthController],
-  providers: [AuthService, JwtService, UsersService, JwtStrategy],
+  providers: [AuthService, JwtService, UsersService, JwtStrategy,SendMail],
   imports: [
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.register({
