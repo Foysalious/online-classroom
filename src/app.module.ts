@@ -12,6 +12,7 @@ import { UsersService } from './users/users.service';
 import { UserRepository } from './users/users.repository';
 import { SendMail } from './users/mail/send.mail';
 import { AuthorizationMiddleware } from './middlewares/authorization.middleware';
+import { ClassroomModule } from './classroom/classroom.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { AuthorizationMiddleware } from './middlewares/authorization.middleware'
     UsersModule,
     TypeOrmModule.forRoot(dbConfig()),
     TypeOrmModule.forFeature([UserRepository]),
+    ClassroomModule,
   ],
   controllers: [AppController, AuthController],
   providers: [AppService, AuthService, JwtService, UsersService, SendMail],

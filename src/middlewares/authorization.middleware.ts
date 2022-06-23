@@ -9,7 +9,8 @@ export class AuthorizationMiddleware implements NestMiddleware {
         const auth = req.headers.authorization
         if (!auth) throw new UnauthorizedException()
         const jwt: string = auth.replace('Bearer ', '');
-        const payload = await this.authService.jwtTokenDecode(jwt);                                                                     
+        const payload = await this.authService.jwtTokenDecode(jwt); 
+        payload._id=payload.id                                                                    
         res.locals.userPayload = payload
         next();
     }
