@@ -1,6 +1,6 @@
 import { BaseEntity, Column, Entity, Index, ObjectIdColumn } from 'typeorm';
 
-@Entity('classroom')
+@Entity('classrooms')
 export class Classroom extends BaseEntity {
   @ObjectIdColumn()
   _id: string;

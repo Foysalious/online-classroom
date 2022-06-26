@@ -1,4 +1,4 @@
-import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
@@ -29,6 +29,9 @@ export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
       .apply(AuthorizationMiddleware)
-      .forRoutes('*');
+      .exclude({ path: 'api/v1/auth/register', method: RequestMethod.POST },
+        { path: 'api/v1/auth/login', method: RequestMethod.POST },
+        { path: 'api/v1/class-sign-up', method: RequestMethod.GET }
+      ).forRoutes('*');
   }
 }
