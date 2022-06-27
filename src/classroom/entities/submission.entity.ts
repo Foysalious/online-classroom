@@ -20,5 +20,5 @@ export class Submission extends BaseEntity {
     teacher_id: string;
 
     @Column()
-    marks: string;
-}
+    marks: Number;
+} 

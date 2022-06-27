@@ -17,6 +17,7 @@ import { UploadPostDto } from './dto/upload-post.dto';
 import 'multer';
 import { AwsS3 } from './aws-s3';
 import { SubmissionRepository } from './submission.repository';
+import { MarkDto } from './dto/mark.dto';
 @Injectable()
 export class ClassroomService {
 
@@ -106,5 +107,20 @@ export class ClassroomService {
       post_id: String(post._id),
       teacher_id: classroom.teacher_id
     })
+  }
+
+  async provideMarkingForPost(markDto: MarkDto, userInfo: User, id: string) {
+    const submission = await this.submissionRepository.findOne({
+      where: {
+        _id: new mongodb.ObjectId(id),
+        student_id: markDto.student_id,
+        teacher_id: userInfo._id,
+        post_id: markDto.post_id
+      }
+    })
+    if (submission==undefined) throw new NotFoundException("Submission Not Found")
+    submission.marks=Number(markDto.mark)
+    await this.submissionRepository.save(submission)
+    
   }
 }

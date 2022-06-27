@@ -6,6 +6,9 @@ import { CreateExamDto } from './dto/create-exam.dto';
 import { StudentSignUpDto } from './dto/student-sign-up.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UploadPostDto } from './dto/upload-post.dto';
+import { log } from 'console';
+import { MarkDto } from './dto/mark.dto';
+import { User } from '../users/entities/user.entity';
 
 @Controller('api/v1')
 export class ClassroomController {
@@ -42,8 +45,14 @@ export class ClassroomController {
   @UseInterceptors(FileInterceptor('file'))
   async uploadPost(@UploadedFile() file: unknown, @Query() studentSignUpDto: UploadPostDto, @Res() response: Response) {
     const userInfo = response.locals.userPayload
-    this.classroomService.uploadPost(studentSignUpDto, file,userInfo);
+    this.classroomService.uploadPost(studentSignUpDto, file, userInfo);
     response.send({ message: "successful" })
-  } 
+  }
+
+  @Post('submission-mark/:id')
+  async provideMarkingForPost(@Param('id') id: string, @Body() markDto: MarkDto, @Res() response: Response) {
+    const userInfo: User = response.locals.userPayload
+    this.classroomService.provideMarkingForPost(markDto, userInfo, id);
+    response.status(201).send()
+  }
 }
- 
