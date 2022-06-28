@@ -1,4 +1,4 @@
-import { BadRequestException, HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { BadRequestException, HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { LoginDto } from './dto/login.dto';
 import { JwtPayload } from './interfaces/jwt-payload.interface';
 import { JwtService } from '@nestjs/jwt';
@@ -7,6 +7,7 @@ import * as bcrypt from 'bcryptjs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserRepository } from 'src/users/users.repository';
 import { isString } from 'class-validator';
+import { User } from 'src/users/entities/user.entity';
 
 type decodedToken = null | {
   [key: string]: any;
@@ -53,5 +54,16 @@ export class AuthService {
     const secret = { secret: process.env.APP_SECRET ?? 'topsecret51' };
     const token = this.jwtService.sign(payload, secret);
     return { token };
+  }
+
+  async getProfile(userInfo: User){
+    const user = await this.userRepository.findOne({
+      where: {
+        email: userInfo.email,
+      },select:['_id','email']
+    });
+    if (user==undefined) {
+      throw new NotFoundException("No User Found")
+    }
   }
 }

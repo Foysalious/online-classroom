@@ -62,4 +62,11 @@ export class ClassroomController {
     const classroom = await this.classroomService.getClassRoom(userInfo);
     response.send(classroom)
   }
+
+  @Get('classroom-subscriptions/:id')
+  async getClassrommSubscriptions(@Param('id') id: string,@Res() response: Response) {
+    const userInfo = response.locals.userPayload
+    const subscribtionList = await this.classroomService.getClassrommSubscriptions(id,userInfo);
+    response.send(subscribtionList)
+  }
 }

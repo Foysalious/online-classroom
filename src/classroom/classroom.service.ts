@@ -135,4 +135,16 @@ export class ClassroomService {
     }
     return classroom
   }
+
+  async getClassrommSubscriptions(id:string,userInfo:User){
+    const classroom = await this.subscriptionRepository.find({
+      where: {
+        classroom_id: id
+      }
+    })
+    if (classroom.length == 0) {
+      throw new NotFoundException("No Subscription Found")
+    }
+    return classroom
+  }
 }

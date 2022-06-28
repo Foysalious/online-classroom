@@ -24,6 +24,13 @@ export class AuthController {
     return response.status(201).send(user);
   }
 
+  @Post('auth/profile')
+  async getProfile( @Res() response: Response) {
+    const userInfo = response.locals.userPayload
+    const user = await this.authService.getProfile(userInfo);
+    return response.status(201).send(user);
+  }
+
   @Post('auth/login')
   async login(@Body() authCredentialDto: LoginDto) {
     return await this.authService.login( authCredentialDto);
