@@ -123,4 +123,16 @@ export class ClassroomService {
     await this.submissionRepository.save(submission)
     
   }
+
+  async getClassRoom(userInfo: User) {
+    const classroom = await this.classRoomRepository.find({
+      where: {
+        teacher_id: userInfo._id
+      }
+    })
+    if (post.length == 0) {
+      throw new NotFoundException("No Classroom Found")
+    }
+    return classroom
+  }
 }

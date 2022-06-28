@@ -55,4 +55,11 @@ export class ClassroomController {
     this.classroomService.provideMarkingForPost(markDto, userInfo, id);
     response.status(201).send()
   }
+
+  @Get('classrooms')
+  async getClassRoom(@Res() response: Response) {
+    const userInfo = response.locals.userPayload
+    const classroom = await this.classroomService.getClassRoom(userInfo);
+    response.send(classroom)
+  }
 }
