@@ -2,8 +2,8 @@ import * as nodemailer from 'nodemailer';
 require('dotenv').config()
 export class SendMail {
 
-  async sentMail(password: string, email: string) {
-   var transport = nodemailer.createTransport({
+  createTransport(){
+    return nodemailer.createTransport({
       host: process.env.MAIL_HOST,
       port: 2525,
       auth: {
@@ -11,12 +11,26 @@ export class SendMail {
         pass: process.env.MAIL_PASSWORD
       }
     });
+  }
+  async sentMail(password: string, email: string) {
+   const transport = this.createTransport()
 
     let info = await transport.sendMail({
-      from: '"CLASSROOM" <foo@example.com>', // sender address
+      from: '"CLASSROOM" <test@strativ.com>', 
       to: email,
-      subject: "Confidential, Online Classroom Password", // Subject line
-      text: "Your classroom password: " + password, // plain text body
+      subject: "Confidential, Online Classroom Password", 
+      text: "Your classroom password: " + password, 
     });
   }
+
+  async sentStudentMail(email) {
+    const transport = this.createTransport()
+ 
+     let info = await transport.sendMail({
+       from: '"CLASSROOM" <test@strativ.com>', 
+       to: email,
+       subject: "Exam", 
+       text: "You have an Upcoming Exam "  
+     });
+   }
 }

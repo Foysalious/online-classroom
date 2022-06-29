@@ -1,14 +1,12 @@
 import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { User } from 'src/users/entities/user.entity';
 import { CreateClassroomDto } from './dto/create-classroom.dto';
-import { Multer } from 'multer';
 import { v4 as uuidv4 } from 'uuid';
 import { ClassRoomRepository } from './classroom.repository';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ExamRepository } from './exam.repository';
 import { CreateExamDto } from './dto/create-exam.dto';
 import * as mongodb from "mongodb";
-import { AuthService } from 'src/auth/auth.service';
 import { StudentSignUpDto } from './dto/student-sign-up.dto';
 import { UserRepository } from 'src/users/users.repository';
 import * as bcrypt from 'bcryptjs';
@@ -19,6 +17,7 @@ import { AwsS3 } from './aws-s3';
 import { SubmissionRepository } from './submission.repository';
 import { MarkDto } from './dto/mark.dto';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { SendMail } from '../users/mail/send.mail';
 @Injectable()
 export class ClassroomService {
 
@@ -28,7 +27,8 @@ export class ClassroomService {
     @InjectRepository(UserRepository) private userRepository: UserRepository,
     @InjectRepository(SubscriptionRepository) private subscriptionRepository: SubscriptionRepository,
     @InjectRepository(SubmissionRepository) private submissionRepository: SubmissionRepository,
-    private awsS3: AwsS3
+    private awsS3: AwsS3,
+    private sendUserMail: SendMail
   ) { }
 
   create(createClassroomDto: CreateClassroomDto, userInfo: User) {
@@ -149,18 +149,41 @@ export class ClassroomService {
     return classroom
   }
 
-  // @Cron(CronExpression.EVERY_SECOND)
-  // async sendNotification() {
+  async sendMail(students: User[]) {
+    for (let i = 0; i < students.length; i++) {
+      this.sendUserMail.sentStudentMail(students[i].email)
+    }
+  }
 
-  //   // console.log(new Date("2022-06-26T14:03:13.181Z"));
+  @Cron(CronExpression.EVERY_SECOND)
+  async sendNotification() {
+    const time = new Date
+    time.setHours(time.getHours() - 1);
+    const posts = await this.postRepository.find()
+    const classRoomIds = []
+    for (let i = 0; i < posts.length; i++) {
+      const date = new Date(posts[i].deadLine)
+      date.setHours(date.getHours() - 1);
+      if (date == time) {
+        classRoomIds.push(new mongodb.ObjectId(posts[i].classroom_id))
+      }
+    }
+    let uniqueClassroomIds = [...new Set(classRoomIds)];
+    const subscribtions = await this.subscriptionRepository.find({
+      where: {
+        $or: [{ classroom_id: { $in: uniqueClassroomIds } }]
+      }
+    })
+    const studentId = []
+    for (let i = 0; i < subscribtions.length; i++) {
+      studentId.push(subscribtions[i].student_id)
+    }
 
-  //   const time = new Date
-  //   console.log(time);
-
-  //   const posts = await this.postRepository.find()
-
-
-
-
-  // }
+    const students = await this.userRepository.find({
+      where: {
+        $or: [{ _id: { $in: studentId } }]
+      }
+    })
+    this.sendMail(students)
+  }
 }
