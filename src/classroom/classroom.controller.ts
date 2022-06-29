@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Res, UseInterceptors, UploadedFile, Query, ValidationPipe, UsePipes } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Res, UseInterceptors, UploadedFile, Query, ValidationPipe, UsePipes, UnauthorizedException } from '@nestjs/common';
 import { ClassroomService } from './classroom.service';
 import { CreateClassroomDto } from './dto/create-classroom.dto';
 import { Express, Response, Request } from 'express';
@@ -18,6 +18,8 @@ export class ClassroomController {
   @UsePipes(new ValidationPipe({ transform: true }))
   async create(@Body() createClassroomDto: CreateClassroomDto, @Res() response: Response) {
     const userInfo = response.locals.userPayload
+    if (userInfo.role == "Student")
+      throw new UnauthorizedException("You are not authorized")
     const classroom = await this.classroomService.create(createClassroomDto, userInfo);
     response.send(classroom)
   }
@@ -26,6 +28,8 @@ export class ClassroomController {
   @UsePipes(new ValidationPipe({ transform: true }))
   async createPost(@Body() createExamDto: CreateExamDto, @Res() response: Response) {
     const userInfo = response.locals.userPayload
+    if (userInfo.role == "Admin" || userInfo.role == "Student")
+      throw new UnauthorizedException("You are not authorized")
     this.classroomService.createPost(createExamDto, userInfo);
     response.send({ message: "Posts Created" })
   }
@@ -33,6 +37,8 @@ export class ClassroomController {
   @Get('posts')
   async getPost(@Res() response: Response) {
     const userInfo = response.locals.userPayload
+    if (userInfo.role == "Admin" || userInfo.role == "Student")
+      throw new UnauthorizedException("You are not authorized")
     const post = await this.classroomService.getPost(userInfo);
     response.send(post)
   }
@@ -44,11 +50,13 @@ export class ClassroomController {
     response.send({ message: "successful" })
   }
 
-  @Post('upload-post')
+  @Post('upload-post-submission')
   @UseInterceptors(FileInterceptor('file'))
   @UsePipes(new ValidationPipe({ transform: true }))
   async uploadPost(@UploadedFile() file: unknown, @Query() studentSignUpDto: UploadPostDto, @Res() response: Response) {
     const userInfo = response.locals.userPayload
+    if (userInfo.role == "Admin" || userInfo.role == "Teacher")
+      throw new UnauthorizedException("You are not authorized")
     this.classroomService.uploadPost(studentSignUpDto, file, userInfo);
     response.send({ message: "successful" })
   }
@@ -57,6 +65,8 @@ export class ClassroomController {
   @UsePipes(new ValidationPipe({ transform: true }))
   async provideMarkingForPost(@Param('id') id: string, @Body() markDto: MarkDto, @Res() response: Response) {
     const userInfo: User = response.locals.userPayload
+    if (userInfo.role == "Admin" || userInfo.role == "Student")
+      throw new UnauthorizedException("You are not authorized")
     this.classroomService.provideMarkingForPost(markDto, userInfo, id);
     response.status(201).send()
   }
@@ -65,6 +75,8 @@ export class ClassroomController {
   @UsePipes(new ValidationPipe({ transform: true }))
   async getClassRoom(@Res() response: Response) {
     const userInfo = response.locals.userPayload
+    if (userInfo.role == "Admin" || userInfo.role == "Student")
+      throw new UnauthorizedException("You are not authorized")
     const classroom = await this.classroomService.getClassRoom(userInfo);
     response.send(classroom)
   }
@@ -73,6 +85,8 @@ export class ClassroomController {
   @UsePipes(new ValidationPipe({ transform: true }))
   async getClassrommSubscriptions(@Param('id') id: string, @Res() response: Response) {
     const userInfo = response.locals.userPayload
+    if (userInfo.role == "Admin" || userInfo.role == "Student")
+      throw new UnauthorizedException("You are not authorized")
     const subscribtionList = await this.classroomService.getClassrommSubscriptions(id, userInfo);
     response.send(subscribtionList)
   }
