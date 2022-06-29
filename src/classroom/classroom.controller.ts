@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Res, UseInterceptors, UploadedFile, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Res, UseInterceptors, UploadedFile, Query, ValidationPipe, UsePipes } from '@nestjs/common';
 import { ClassroomService } from './classroom.service';
 import { CreateClassroomDto } from './dto/create-classroom.dto';
 import { Express, Response, Request } from 'express';
@@ -15,6 +15,7 @@ export class ClassroomController {
   constructor(private readonly classroomService: ClassroomService) { }
 
   @Post('classroom')
+  @UsePipes(new ValidationPipe({ transform: true }))
   async create(@Body() createClassroomDto: CreateClassroomDto, @Res() response: Response) {
     const userInfo = response.locals.userPayload
     const classroom = await this.classroomService.create(createClassroomDto, userInfo);
@@ -22,6 +23,7 @@ export class ClassroomController {
   }
 
   @Post('posts')
+  @UsePipes(new ValidationPipe({ transform: true }))
   async createPost(@Body() createExamDto: CreateExamDto, @Res() response: Response) {
     const userInfo = response.locals.userPayload
     this.classroomService.createPost(createExamDto, userInfo);
@@ -36,6 +38,7 @@ export class ClassroomController {
   }
 
   @Post('class-sign-up')
+  @UsePipes(new ValidationPipe({ transform: true }))
   async signUpToClass(@Body() studentSignUpDto: StudentSignUpDto, @Res() response: Response) {
     await this.classroomService.signUpToClass(studentSignUpDto);
     response.send({ message: "successful" })
@@ -43,6 +46,7 @@ export class ClassroomController {
 
   @Post('upload-post')
   @UseInterceptors(FileInterceptor('file'))
+  @UsePipes(new ValidationPipe({ transform: true }))
   async uploadPost(@UploadedFile() file: unknown, @Query() studentSignUpDto: UploadPostDto, @Res() response: Response) {
     const userInfo = response.locals.userPayload
     this.classroomService.uploadPost(studentSignUpDto, file, userInfo);
@@ -50,6 +54,7 @@ export class ClassroomController {
   }
 
   @Post('submission-mark/:id')
+  @UsePipes(new ValidationPipe({ transform: true }))
   async provideMarkingForPost(@Param('id') id: string, @Body() markDto: MarkDto, @Res() response: Response) {
     const userInfo: User = response.locals.userPayload
     this.classroomService.provideMarkingForPost(markDto, userInfo, id);
@@ -57,6 +62,7 @@ export class ClassroomController {
   }
 
   @Get('classrooms')
+  @UsePipes(new ValidationPipe({ transform: true }))
   async getClassRoom(@Res() response: Response) {
     const userInfo = response.locals.userPayload
     const classroom = await this.classroomService.getClassRoom(userInfo);
@@ -64,9 +70,11 @@ export class ClassroomController {
   }
 
   @Get('classroom-subscriptions/:id')
-  async getClassrommSubscriptions(@Param('id') id: string,@Res() response: Response) {
+  @UsePipes(new ValidationPipe({ transform: true }))
+  async getClassrommSubscriptions(@Param('id') id: string, @Res() response: Response) {
     const userInfo = response.locals.userPayload
-    const subscribtionList = await this.classroomService.getClassrommSubscriptions(id,userInfo);
+    const subscribtionList = await this.classroomService.getClassrommSubscriptions(id, userInfo);
     response.send(subscribtionList)
   }
+
 }

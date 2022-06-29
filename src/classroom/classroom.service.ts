@@ -18,6 +18,7 @@ import 'multer';
 import { AwsS3 } from './aws-s3';
 import { SubmissionRepository } from './submission.repository';
 import { MarkDto } from './dto/mark.dto';
+import { Cron, CronExpression } from '@nestjs/schedule';
 @Injectable()
 export class ClassroomService {
 
@@ -38,7 +39,7 @@ export class ClassroomService {
   createPost(createExamDto: CreateExamDto, userInfo: User) {
     this.postRepository.save({
       type: createExamDto.type, classroom_id: createExamDto.classroom_id, name: createExamDto.name,
-      question: createExamDto.question, teacher_id: userInfo._id, mark: Number(createExamDto.mark), deadLine: createExamDto.deadLine
+      question: createExamDto.question, teacher_id: userInfo._id, mark: Number(createExamDto.mark), deadLine: new Date(createExamDto.deadLine)
     })
   }
 
@@ -100,7 +101,7 @@ export class ClassroomService {
     })
 
     const base64Image: string = file.buffer.toString('base64');
-    const imageLink = await (await this.awsS3.uploadImage(base64Image)).Location
+    const imageLink = (await this.awsS3.uploadImage(base64Image)).Location
     this.submissionRepository.save({
       file: imageLink,
       student_id: userInfo._id,
@@ -118,10 +119,10 @@ export class ClassroomService {
         post_id: markDto.post_id
       }
     })
-    if (submission==undefined) throw new NotFoundException("Submission Not Found")
-    submission.marks=Number(markDto.mark)
+    if (submission == undefined) throw new NotFoundException("Submission Not Found")
+    submission.marks = Number(markDto.mark)
     await this.submissionRepository.save(submission)
-    
+
   }
 
   async getClassRoom(userInfo: User) {
@@ -130,13 +131,13 @@ export class ClassroomService {
         teacher_id: userInfo._id
       }
     })
-    if (post.length == 0) {
+    if (classroom.length == 0) {
       throw new NotFoundException("No Classroom Found")
     }
     return classroom
   }
 
-  async getClassrommSubscriptions(id:string,userInfo:User){
+  async getClassrommSubscriptions(id: string, userInfo: User) {
     const classroom = await this.subscriptionRepository.find({
       where: {
         classroom_id: id
@@ -147,4 +148,19 @@ export class ClassroomService {
     }
     return classroom
   }
+
+  // @Cron(CronExpression.EVERY_SECOND)
+  // async sendNotification() {
+
+  //   // console.log(new Date("2022-06-26T14:03:13.181Z"));
+
+  //   const time = new Date
+  //   console.log(time);
+
+  //   const posts = await this.postRepository.find()
+
+
+
+
+  // }
 }

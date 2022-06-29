@@ -3,9 +3,7 @@ require('dotenv').config()
 export class SendMail {
 
   async sentMail(password: string, email: string) {
-    console.log(process.env.MAIL_HOST);
-
-    var transport = nodemailer.createTransport({
+   var transport = nodemailer.createTransport({
       host: process.env.MAIL_HOST,
       port: 2525,
       auth: {

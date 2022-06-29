@@ -33,6 +33,9 @@ export class AuthService {
         email: email,
       }
     });
+    if (user == undefined)
+      throw new NotFoundException("No User Found")
+
     const isMatch = await bcrypt.compareSync(password, user.password);
     if (!isMatch) throw new BadRequestException('Incorrect username or password');
     return await this.getAccessToken(user._id, user.role, user.email);
@@ -56,13 +59,13 @@ export class AuthService {
     return { token };
   }
 
-  async getProfile(userInfo: User){
+  async getProfile(userInfo: User) {
     const user = await this.userRepository.findOne({
       where: {
         email: userInfo.email,
-      },select:['_id','email']
+      }, select: ['_id', 'email']
     });
-    if (user==undefined) {
+    if (user == undefined) {
       throw new NotFoundException("No User Found")
     }
   }

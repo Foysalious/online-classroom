@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import * as bcrypt from 'bcryptjs';
@@ -15,26 +15,36 @@ export class UsersService {
     private sendMail: SendMail,
   ) { }
 
-  async createTeacher(request){
-    this.sendMail.sentMail(request.password,request.email)
+  async createTeacher(request) {
+    this.sendMail.sentMail(request.password, request.email)
   }
 
   async createUserByEmail(request) {
     if (request.role == Users.TEACHER) {
-       this.createTeacher(request)
+      this.createTeacher(request)
     }
     const salt = await bcrypt.genSaltSync(10);
     if (request.password)
       request.password = request.password
         ? await bcrypt.hashSync(request.password, salt)
         : null;
+    console.log(1);
+    const user = await this.userRepository.findOne({
+      where: {
+        email: request.email,
+        role: request.role
+      }
+    })
+    if (user != undefined) {
+      throw new UnauthorizedException("User Already Exist")
+    }
     return await this.userRepository.save({
       role: request.role,
       email: request.email,
-      password:request.password
+      password: request.password
     });
   }
-  
+
   create(createUserDto: CreateUserDto) {
     return 'This action adds a new user';
   }
