@@ -17,4 +17,5 @@
   <li>AWS_S3_ACCESS_KEY</li>
   <li>AWS_S3_KEY_SECRET</li>
   <li>AWS_S3_BUCKET</li>
+  <li>MONGO_DSN</li>
 </ul>
