@@ -9,7 +9,7 @@ async function bootstrap() {
     .setDescription('Online Classroom')
     .setVersion('1.0')
     .addBearerAuth()
-    .build();
+    .build(); 
  
   const document = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup('api', app, document);
